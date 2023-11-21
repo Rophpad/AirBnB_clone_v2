@@ -10,6 +10,34 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
+import re
+
+
+def parse_parameter_args(arg):
+    """parse the parameters 'key'='value' and append to a dictionary"""
+    param_dict = {}
+    if ('=' in arg):
+        # convert string '[....]' to list []
+        arg_list = eval(arg)
+        # capture the parameter and two sub groups of parameter, key & value
+        pattern_str = r'^(.+)="(.*)"$'
+        pattern_float = r'^(.+)=(-?[0-9]+\.[0-9]+)$'
+        pattern_int = r'^(.+)=(-?[0-9]+)$'
+        p_list = [pattern_str, pattern_float, pattern_int]
+        # iterate argument parameter list to match valid parameter
+        for param in arg_list:
+            for p in p_list:
+                if (re.search(p, param)):
+                    # extract key and value from parameter
+                    key = re.search(p, param).group(1)
+                    value = re.search(p, param).group(2)
+                    if (p == pattern_float or p == pattern_int):
+                        value = eval(value)
+                    else:
+                        value = value.replace('_', ' ')
+                    param_dict[key] = value
+                    break
+    return param_dict
 
 
 class HBNBCommand(cmd.Cmd):
@@ -43,10 +71,28 @@ class HBNBCommand(cmd.Cmd):
         """
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
-        # scan for general formating - i.e '.', '(', ')'
-        if not ('.' in line and '(' in line and ')' in line):
+        condition1 = '.' in line and '(' in line and ')' in line
+        condition2 = '=' in line
+
+        # scan for parameter arguments of condition2
+        if (condition2):
+            try:
+                # split line arguments & append to a list
+                pline = line.split(' ')
+                _cmd, _cls = pline[0], pline[1]
+                # create a list for the parameters
+                args = [x for x in pline[2:]]
+                line = ' '.join([_cmd, _cls, str(args)])
+            except Exception:
+                pass
+            finally:
+                return line
+
+        # scan for parameter arguments of condition1
+        if not (condition1):
             return line
 
+        # block executes if condition1 is true and condition2 is false
         try:  # parse line left to right
             pline = line[:]  # parsed line
 
@@ -73,7 +119,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -115,14 +161,25 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
+        pargs = args.partition(' ')
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+        elif pargs[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
+
+        new_instance = HBNBCommand.classes[pargs[0]]()
+        try:
+            # if parameter argument(s) is present
+            param_dict = parse_parameter_args(pargs[2])
+            for k, v in param_dict.items():
+                # check if parameter key is a valid attribute in class
+                if k in eval(pargs[0]).__dict__:
+                    new_instance.__setattr__(k, v)
+        except IndexError:
+            pass
+        
         print(new_instance.id)
         storage.save()
 
@@ -187,7 +244,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -272,7 +329,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -280,10 +337,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
@@ -319,6 +376,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
