@@ -9,6 +9,7 @@ Base = declarative_base()
 
 class BaseModel:
     """A base class for all hbnb models"""
+    
     __tablename__ == 'self'
     id = Column(String(60), nullable=False, primary_key=True)
     created_at = Column(datetime, nullable=False)
