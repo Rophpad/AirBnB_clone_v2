@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
+import models
 from os import getenv
 from models.base_model import Base
 from models.base_model import BaseModel
+from models.amenity import Amenity
+from models.review import Review
 from sqlalchemy import Column
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
@@ -12,9 +15,9 @@ from sqlalchemy import Table
 from sqlalchemy.orm import relationship
 
 lk_table = Table("place_amenity", Base.metadata,
-                 Column("place_id", String(60), ForeignKey("place.id"),
+                 Column("place_id", String(60), ForeignKey("places.id"),
                         primary_key=True, nullable=False),
-                 Column("amenity_id", String(60), ForeignKey("amenity.id"),
+                 Column("amenity_id", String(60), ForeignKey("amenities.id"),
                         primary_key=True, nullable=False))
 
 
@@ -42,7 +45,7 @@ class Place(BaseModel, Base):
             """ Get a list of all linked reviews. """
             reviewList = []
             for review in list(models.storage.all(Review).values()):
-                if review.place.id == self.id:
+                if review.place_id == self.id:
                     reviewList.append(review)
             return reviewList
 
