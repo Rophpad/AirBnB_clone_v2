@@ -11,7 +11,6 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 import re
-from os import getenv
 
 
 def parse_parameter_args(arg):
@@ -182,8 +181,7 @@ class HBNBCommand(cmd.Cmd):
             pass
 
         print(new_instance.id)
-        if getenv("HBNB_TYPE_STORAGE") == "db":
-            storage.new(new_instance)
+        storage.new(new_instance)
         storage.save()
 
     def help_create(self):
