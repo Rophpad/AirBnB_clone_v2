@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship
 
 lk_table = Table("place_amenity", Base.metadata,
                  Column("place_id", String(60), ForeignKey("place.id"),
-                        primary_ke=True, nullable=False),
+                        primary_key=True, nullable=False),
                  Column("amenity_id", String(60), ForeignKey("amenity.id"),
                         primary_key=True, nullable=False))
 
