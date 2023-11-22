@@ -4,7 +4,7 @@ from os import getenv
 from models.base_model import Base
 from models.base_model import BaseModel
 from sqlalchemy import Column
-from sqlalchemy import FLoat
+from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -15,7 +15,7 @@ lk_table = Table("place_amenity", Base.metadata,
                  Column("place_id", String(60), ForeignKey("place.id"),
                         primary_ke=True, nullable=False),
                  Column("amenity_id", String(60), ForeignKey("amenity.id"),
-                        primary_key=True, nallable=False))
+                        primary_key=True, nullable=False))
 
 
 class Place(BaseModel, Base):
@@ -51,12 +51,12 @@ class Place(BaseModel, Base):
             """Gets linked Amenities"""
             amenityList = []
             for amenity in list(models.storage.all(Amenity).values()):
-                id amenity.id in self.amenity_ids:
+                if amenity.id in self.amenity_ids:
                     amenity_list.append(amenity)
             return amenityList
 
         @amenities.setter
-        def amenities(self, value)
-        """Adds an Amenity.id to the attribute amenity_ids"""
-        if type(value) == Amenity:
-            self.amenity_ids.append(value.id)
+        def amenities(self, value):
+            """Adds an Amenity.id to the attribute amenity_ids"""
+            if type(value) == Amenity:
+                self.amenity_ids.append(value.id)
