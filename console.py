@@ -34,7 +34,7 @@ def parse_parameter_args(arg):
                     if (p == pattern_float or p == pattern_int):
                         value = eval(value)
                     else:
-                        value = value.replace('_', ' ')
+                        value = value.replace('_', ' ').replace('\\"', '"')
                     param_dict[key] = value
                     break
     return param_dict
@@ -179,8 +179,9 @@ class HBNBCommand(cmd.Cmd):
                     new_instance.__setattr__(k, v)
         except IndexError:
             pass
-        
+
         print(new_instance.id)
+        storage.new(new_instance)
         storage.save()
 
     def help_create(self):
