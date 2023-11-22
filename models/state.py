@@ -17,13 +17,13 @@ class State(BaseModel, Base):
     cities = relationship('City', backref='state',
                           cascade='all, delete, delete-orphan')
 
-    if getenv("HBNB_TYPE_STORAGE") != "db":
-        @property
-        def cities(self):
-            """Getter attribute for cities related to the state"""
-            from models import storage
-            city_list = []
-            for city in storage.all(City).values():
-                if city.state_id == self.id:
-                    city_list.append(city)
-            return city_list
+    # if getenv("HBNB_TYPE_STORAGE") != "db":
+    @property
+    def cities(self):
+        """Getter attribute for cities related to the state"""
+        from models import storage
+        city_list = []
+        for city in storage.all(City).values():
+            if city.state_id == self.id:
+                city_list.append(city)
+        return city_list
