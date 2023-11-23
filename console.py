@@ -14,27 +14,6 @@ import re
 import ast
 
 
-def parse_parameter_args(arg):
-    """parse the parameters 'key'='value' and append to a dictionary"""
-    param_dict = {}
-    if ('=' in arg):
-        try:
-            arg_list = ast.literal_eval(arg)
-            if isinstance(arg_list, list):
-                for param in arg_list:
-                    if '=' in param:
-                        key, value = param.split('=', 1)
-                        key = key.strip()
-                        value = value.strip()
-                        try:
-                            param_dict[key] = ast.literal_eval(value)
-                        except (SyntaxError, ValueError):
-                            pass
-        except (SyntaxError, ValueError) as e:
-            print(e)
-    return param_dict
-
-
 class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
 
@@ -66,25 +45,10 @@ class HBNBCommand(cmd.Cmd):
         """
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
-        condition1 = '.' in line and '(' in line and ')' in line
-        condition2 = '=' in line
+        condition = '.' in line and '(' in line and ')' in line
 
-        # scan for parameter arguments of condition2
-        if (condition2):
-            try:
-                # split line arguments & append to a list
-                pline = line.split(' ')
-                _cmd, _cls = pline[0], pline[1]
-                # create a list for the parameters
-                args = [x for x in pline[2:]]
-                line = ' '.join([_cmd, _cls, str(args)])
-            except Exception:
-                pass
-            finally:
-                return line
-
-        # scan for parameter arguments of condition1
-        if not (condition1):
+        # scan for parameter arguments of condition
+        if not (condition):
             return line
 
         # block executes if condition1 is true and condition2 is false
@@ -156,31 +120,49 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        pargs = args.partition(' ')
+        args_list = args.split()
         if not args:
             print("** class name missing **")
             return
-        elif pargs[0] not in HBNBCommand.classes:
+
+        class_name = args_list[0]
+
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
 
-        class_name = pargs[0]
         obj = None
+
+        """Extract parameters from the command"""
+        params = args_list[1:]
+        param_dict = {}
+        for param in params:
+            key, value = param.split('=', 1)
+
+            """Replace underscores with spaces in string values"""
+            if value.startswith('"') and type(value) is str:
+                value = value.strip('"')
+
+                value = value.replace('_', ' ').replace('\\"', '"')
+            elif type(value) not in (str, float, int):
+                pass
+            else:
+                value = ast.literal_eval(value)
+            param_dict[key] = value
+
         try:
-            # if parameter argument(s) is present
-            param_dict = parse_parameter_args(pargs[2])
             for k in param_dict.copy():
                 # check if parameter key is a valid attribute in class
                 if k not in eval(class_name).__dict__:
                     del param_dict[k]
 
             obj = HBNBCommand.classes[class_name](**param_dict)
-        except IndexError:
-            obj = HBNBCommand.classes[class_name]()
 
-        storage.new(obj)
-        storage.save()
-        print(obj.id)
+            storage.new(obj)
+            storage.save()
+            print(obj.id)
+        except Exception as e:
+            print(e)
 
     def help_create(self):
         """ Help information for the create method """
