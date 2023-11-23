@@ -270,12 +270,12 @@ class HBNBCommand(cmd.Cmd):
             for k, v in storage.all().items():
                 c_name, c_id = k.split('.')
                 if c_name == args:
-                    obj = f'[{c_name}] ({c_id}) {v.to_dict()})'
+                    obj = f'{v}'
                     print_list.append(obj)
         else:
             for k, v in storage.all().items():
                 c_name, c_id = k.split('.')
-                obj = f'[{c_name}] ({c_id}) {v.to_dict()})'
+                obj = f'{v}'
                 print_list.append(obj)
 
         print(print_list)
