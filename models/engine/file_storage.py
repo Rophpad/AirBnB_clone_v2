@@ -29,7 +29,9 @@ class FileStorage:
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+        if obj:
+            key = '{}.{}'.format(obj.__class__.__name__, obj.id)
+            self.__objects[key] = obj
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -42,6 +44,7 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
+        from datetime import datetime
 
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
@@ -53,8 +56,13 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = val
+                for v in self.__objects.values():
+                    v['created_at'] = datetime.fromisoformat(v['created_at'])
+                    v['updated_at'] = datetime.fromisoformat(v['updated_at'])
         except FileNotFoundError:
+            pass
+        except json.JSONDecodeError as e:
             pass
 
     def delete(self, obj=None):

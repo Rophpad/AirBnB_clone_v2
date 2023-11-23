@@ -11,6 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 import re
+import os
 
 
 def parse_parameter_args(arg):
@@ -183,9 +184,9 @@ class HBNBCommand(cmd.Cmd):
         except IndexError:
             obj = HBNBCommand.classes[class_name]()
 
-        print(obj.id)
         storage.new(obj)
         storage.save()
+        print(obj.id)
 
     def help_create(self):
         """ Help information for the create method """
@@ -216,7 +217,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(storage.all()[key])
+            print(f'[{c_name}] ({c_id}) {storage.all()[key]}')
         except KeyError:
             print("** no instance found **")
 
@@ -262,6 +263,7 @@ class HBNBCommand(cmd.Cmd):
         """ Shows all objects, or all objects of a class"""
         print_list = []
 
+        DB = os.getenv('HBNB_TYPE_STORAGE') == 'db'
         if args:
             args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
@@ -270,12 +272,12 @@ class HBNBCommand(cmd.Cmd):
             for k, v in storage.all().items():
                 c_name, c_id = k.split('.')
                 if c_name == args:
-                    obj = f'{v}'
+                    obj = f'[{c_name}] ({c_id}) {v}' if not DB else f'{v}'
                     print_list.append(obj)
         else:
             for k, v in storage.all().items():
                 c_name, c_id = k.split('.')
-                obj = f'{v}'
+                obj = f'[{c_name}] ({c_id}) {v}' if not DB else f'{v}'
                 print_list.append(obj)
 
         print(print_list)

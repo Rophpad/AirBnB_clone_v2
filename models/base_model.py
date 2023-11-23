@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+import os
 
 Base = declarative_base()
 
@@ -48,8 +49,9 @@ class BaseModel:
         dictionary.pop('_sa_instance_state', None)
         # dictionary.update({'__class__':
         #                  (str(type(self)).split('.')[-1]).split('\'')[0]})
-        # dictionary['created_at'] = self.created_at.isoformat()
-        # dictionary['updated_at'] = self.updated_at.isoformat()
+        if os.getenv('HBNB_TYPE_STORAGE') != 'db':
+            dictionary['created_at'] = self.created_at.isoformat()
+            dictionary['updated_at'] = self.updated_at.isoformat()
         return dictionary
 
     def delete(self):
