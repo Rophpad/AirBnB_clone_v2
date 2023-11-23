@@ -34,7 +34,6 @@ def parse_parameter_args(arg):
             print(e)
     return param_dict
 
-
 class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
 
@@ -379,5 +378,3 @@ class HBNBCommand(cmd.Cmd):
         print("Usage: update <className> <id> <attName> <attVal>\n")
 
 
-if __name__ == "__main__":
-    HBNBCommand().cmdloop()
