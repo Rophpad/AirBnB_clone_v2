@@ -18,7 +18,6 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs):
         """Instatntiates a new model"""
-
         self.id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
@@ -32,7 +31,8 @@ class BaseModel:
     def __str__(self):
         """Returns a string representation of the instance"""
         cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        dict_obj = self.to_dict()
+        dict_obj = self.__dict__.copy()
+        dict_obj.pop('_sa_instance_state', None)
         return '[{}] ({}) {}'.format(cls, self.id, dict_obj)
 
     def save(self):

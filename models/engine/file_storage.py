@@ -10,6 +10,9 @@ from models.state import State
 from models.user import User
 
 
+classes = [BaseModel, User, Place, State, City, Amenity, Review]
+
+
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
     __file_path = 'file.json'
@@ -18,13 +21,13 @@ class FileStorage:
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
         if cls is not None:
-            if type(cls) is str:
-                cls = eval(cls)
             Dict = {}
             for key, value in self.__objects.items():
-                if type(value) is cls:
+                c_name, _ = key.split('.')
+                if c_name == cls:
                     Dict[key] = value
             return Dict
+
         return self.__objects
 
     def new(self, obj):
@@ -46,20 +49,16 @@ class FileStorage:
         """Loads storage dictionary from file"""
         from datetime import datetime
 
-        classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
-                for key, val in temp.items():
-                    self.all()[key] = val
-                for v in self.__objects.values():
-                    v['created_at'] = datetime.fromisoformat(v['created_at'])
-                    v['updated_at'] = datetime.fromisoformat(v['updated_at'])
+                for key, value in temp.items():
+                    c_name, _ = key.split('.')
+                    self.all()[key] = eval(c_name)(**value)
+                # for v in self.__objects.values():
+                #    v['created_at'] = datetime.fromisoformat(v['created_at'])
+                #    v['updated_at'] = datetime.fromisoformat(v['updated_at'])
         except FileNotFoundError:
             pass
         except json.JSONDecodeError as e:
