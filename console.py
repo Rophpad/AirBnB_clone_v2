@@ -268,11 +268,15 @@ class HBNBCommand(cmd.Cmd):
                 print("** class doesn't exist **")
                 return
             for k, v in storage.all().items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+                c_name, c_id = k.split('.')
+                if c_name == args:
+                    obj = f'[{c_name}] ({c_id}) {v.to_dict()})'
+                    print_list.append(obj)
         else:
             for k, v in storage.all().items():
-                print_list.append(str(v))
+                c_name, c_id = k.split('.')
+                obj = f'[{c_name}] ({c_id}) {v.to_dict()})'
+                print_list.append(obj)
 
         print(print_list)
 

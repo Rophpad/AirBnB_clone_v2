@@ -50,10 +50,26 @@ class DBStorage:
             objs.extend(self.__session.query(Review).all())
             objs.extend(self.__session.query(Amenity).all())
         else:
-            if type(cls) == str:
+            if type(cls) is str:
                 cls = eval(cls)
-            objs = self.__session.query(cls)
+            objs = self.__session.query(cls).all()
         return {"{}.{}".format(type(o).__name__, o.id): o for o in objs}
+
+#        new_dict = {}
+#        if cls is None:
+#            class_list = ['User', 'State', 'City', 'Amenity', 'Review']
+#            for item in class_list:
+#                result = self.__session.query(eval(item)).all()
+#                for obj in result:
+#                    key = f'{item}.{obj.id}'
+#                    new_dict[key] = {k: v for k, v in obj.__dict__.items()}
+#        else:
+#            result = self.__session.query(cls).all()
+#            for obj in result:
+#                key = f'{cls.__class__.__name__}.{obj.id}'
+#                new_dict[key] = {k: v for k, v in obj.__dict__.items()}
+
+#        return new_dict
 
     def new(self, obj):
         """Add obj to the current database session."""
