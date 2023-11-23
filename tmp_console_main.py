@@ -34,7 +34,6 @@ def parse_parameter_args(arg):
             print(e)
     return param_dict
 
-
 class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
 
@@ -211,7 +210,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(f'{storage.all()[key]}')
+            print(f'[{c_name}] ({c_id}) {storage.all()[key]}')
         except KeyError:
             print("** no instance found **")
 
@@ -379,5 +378,3 @@ class HBNBCommand(cmd.Cmd):
         print("Usage: update <className> <id> <attName> <attVal>\n")
 
 
-if __name__ == "__main__":
-    HBNBCommand().cmdloop()
