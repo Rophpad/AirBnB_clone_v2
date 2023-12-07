@@ -13,8 +13,8 @@ def do_pack():
         day = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         if isdir("versions") is False:
             local("mkdir versions")
-        file_N = "versions/web_static_{}.tgz".format(day)
-        local("tar -czvf {} web_static".format(file_N))
-        return file_N
+        fileName = "versions/web_static_{}.tgz".format(day)
+        local("tar -czvf {} web_static".format(fileName))
+        return fileName
     except FileNotFoundError:
         return None
