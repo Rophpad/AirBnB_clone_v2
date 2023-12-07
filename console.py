@@ -11,33 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 import re
-
-
-def parse_parameter_args(arg):
-    """parse the parameters 'key'='value' and append to a dictionary"""
-    param_dict = {}
-    if ('=' in arg):
-        # convert string '[....]' to list []
-        arg_list = eval(arg)
-        # capture the parameter and two sub groups of parameter, key & value
-        pattern_str = r'^(.+)="(.*)"$'
-        pattern_float = r'^(.+)=(-?[0-9]+\.[0-9]+)$'
-        pattern_int = r'^(.+)=(-?[0-9]+)$'
-        p_list = [pattern_str, pattern_float, pattern_int]
-        # iterate argument parameter list to match valid parameter
-        for param in arg_list:
-            for p in p_list:
-                if (re.search(p, param)):
-                    # extract key and value from parameter
-                    key = re.search(p, param).group(1)
-                    value = re.search(p, param).group(2)
-                    if (p == pattern_float or p == pattern_int):
-                        value = eval(value)
-                    else:
-                        value = value.replace('_', ' ').replace('\\"', '"')
-                    param_dict[key] = value
-                    break
-    return param_dict
+import ast
 
 
 class HBNBCommand(cmd.Cmd):
@@ -71,25 +45,10 @@ class HBNBCommand(cmd.Cmd):
         """
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
-        condition1 = '.' in line and '(' in line and ')' in line
-        condition2 = '=' in line
+        condition = '.' in line and '(' in line and ')' in line
 
-        # scan for parameter arguments of condition2
-        if (condition2):
-            try:
-                # split line arguments & append to a list
-                pline = line.split(' ')
-                _cmd, _cls = pline[0], pline[1]
-                # create a list for the parameters
-                args = [x for x in pline[2:]]
-                line = ' '.join([_cmd, _cls, str(args)])
-            except Exception:
-                pass
-            finally:
-                return line
-
-        # scan for parameter arguments of condition1
-        if not (condition1):
+        # scan for parameter arguments of condition
+        if not (condition):
             return line
 
         # block executes if condition1 is true and condition2 is false
@@ -161,28 +120,49 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        pargs = args.partition(' ')
+        args_list = args.split()
         if not args:
             print("** class name missing **")
             return
-        elif pargs[0] not in HBNBCommand.classes:
+
+        class_name = args_list[0]
+
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
 
-        new_instance = HBNBCommand.classes[pargs[0]]()
-        try:
-            # if parameter argument(s) is present
-            param_dict = parse_parameter_args(pargs[2])
-            for k, v in param_dict.items():
-                # check if parameter key is a valid attribute in class
-                if k in eval(pargs[0]).__dict__:
-                    new_instance.__setattr__(k, v)
-        except IndexError:
-            pass
+        obj = None
 
-        print(new_instance.id)
-        storage.new(new_instance)
-        storage.save()
+        """Extract parameters from the command"""
+        params = args_list[1:]
+        param_dict = {}
+        for param in params:
+            key, value = param.split('=', 1)
+
+            """Replace underscores with spaces in string values"""
+            if value.startswith('"') and type(value) is str:
+                value = value.strip('"')
+
+                value = value.replace('_', ' ').replace('\\"', '"')
+            elif type(value) not in (str, float, int):
+                pass
+            else:
+                value = ast.literal_eval(value)
+            param_dict[key] = value
+
+        try:
+            for k in param_dict.copy():
+                # check if parameter key is a valid attribute in class
+                if k not in eval(class_name).__dict__:
+                    del param_dict[k]
+
+            obj = HBNBCommand.classes[class_name](**param_dict)
+
+            storage.new(obj)
+            storage.save()
+            print(obj.id)
+        except Exception as e:
+            print(e)
 
     def help_create(self):
         """ Help information for the create method """
@@ -213,7 +193,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(storage._FileStorage__objects[key])
+            print(f'{storage.all()[key]}')
         except KeyError:
             print("** no instance found **")
 
@@ -264,12 +244,14 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            for k, v in storage.all(args).items():
+                obj = f'{v}'
+                print_list.append(obj)
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
+            for k, v in storage.all().items():
+                c_name, c_id = k.split('.')
+                obj = f'{v}'
+                print_list.append(obj)
 
         print(print_list)
 
@@ -281,7 +263,7 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, args):
         """Count current number of class instances"""
         count = 0
-        for k, v in storage._FileStorage__objects.items():
+        for k, v in storage.all().items():
             if args == k.split('.')[0]:
                 count += 1
         print(count)
