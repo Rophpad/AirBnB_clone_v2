@@ -15,6 +15,7 @@ def hbnb():
     """ Returns HBNH from 0.0.0.0:5000/hbnb """
     return "HBNB"
 
+
 @app.route('/c/<text>', strict_slashes=False)
 def c_route(text):
     """ Return C followed by the value of text """
