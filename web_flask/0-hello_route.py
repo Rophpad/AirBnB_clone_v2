@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 
 @app.route('/', strict_slashes=False)
-def hello_hbn():
+def hello_hbnb():
     """ Return Hello HBNB! from 0.0.0.0:5000 """
     return "Hello HBNB!"
 
