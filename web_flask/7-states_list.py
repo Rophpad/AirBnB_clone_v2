@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 """ Starts a Flask web application on 0.0.0.0:5000 """
-from ../models import storage
+
 from flask import Flask
+from models import storage
 from flask import render_template
 app = Flask(__name__)
 
